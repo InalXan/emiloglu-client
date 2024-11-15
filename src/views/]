@@ -1,0 +1,174 @@
+<template>
+  <div class="container_products">
+    <header>
+      <Header />
+    </header>
+    <div class="productscontainer">
+      <ul class="menuproducts">
+        <li v-for="category in categories" :key="category.id">
+          <a href="#" @click.prevent="selectCategory(category)">
+            {{ category.name }}
+          </a>
+        </li>
+      </ul>
+
+      <div class="all">
+        <h1
+          style="font-family: 'Poppins', sans-serif; text-align: center;"
+        >Products</h1>
+        <div class="product">
+          <div class="card" v-for="product in products" :key="product.id" @click="openModal(product.image)">
+            <img
+              :src="getImageUrl(product.image)"
+              alt="Product Image"
+              class="product-image"
+            />
+            <h1>{{ product.name }}</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal to display selected image -->
+    <div v-if="selectedImage" class="modal" @click="closeModal">
+      <div class="modal-content">
+        <img :src="getImageUrl(selectedImage)" alt="Selected Product Image" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import Header from "../components/HeaderC.vue";
+import { ref, onMounted } from "vue";
+import { getCategories, getProducts, getProductByCategory } from "@/api.js";
+
+const selectedImage = ref(null);
+
+const openModal = (image) => {
+  selectedImage.value = image;
+};
+
+const closeModal = () => {
+  selectedImage.value = null;
+};
+
+const categories = ref([]);
+const api = "https://emiloglu.com/uploads/product/";
+const selectedCategoryId = ref(null);
+const products = ref([]);
+
+const getImageUrl = (imagePath) => {
+  return `${api}${imagePath}`;
+};
+
+const fetchCategories = async () => {
+  categories.value = await getCategories();
+};
+
+const fetchProducts = async () => {
+  products.value = await getProducts();
+};
+
+const selectCategory = async (category) => {
+  selectedCategoryId.value = category.id; // Ensure category uses 'id'
+  products.value = await getProductByCategory(selectedCategoryId.value);
+};
+
+onMounted(() => {
+  fetchCategories();
+  fetchProducts();
+});
+</script>
+
+<style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+
+header {
+  background-color: #141f55 !important;
+}
+
+.container_products {
+  padding: 20px;
+}
+
+.productscontainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menuproducts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 95%;
+  background-color: rgba(151, 144, 141, 0.3);
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 20px;
+  list-style-type: none;
+}
+
+.menuproducts a {
+  color: black;
+  padding: 10px;
+  text-decoration: none;
+  border-radius: 3px;
+  font-size: 18px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.menuproducts li {
+  margin: 0 10px;
+}
+
+.menuproducts a:hover {
+  background-color: #1b3c54;
+  color: #fff;
+}
+
+.product {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  position: fixed;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  width: 600px;
+  z-index: 50;
+  margin: 20px;
+  text-align: center;
+  border-radius: 5px;
+  font-family: "Poppins", sans-serif;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.product-image {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: cover;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  flex-grow: 1;
+}
+
+.card h1 {
+  font-size: 16px;
+  padding: 10px;
+  margin: 0;
+  background-color: #fff;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  flex-shrink: 0;
+  text-align: center;
+}
+</style>
